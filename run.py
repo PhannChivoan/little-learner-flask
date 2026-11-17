@@ -1,0 +1,30 @@
+import os
+
+
+def load_env():
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
+    if not os.path.exists(path):
+        return
+    with open(path, encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if line and not line.startswith("#") and "=" in line:
+                key, value = line.split("=", 1)
+                value = value.strip()
+                if len(value) >= 2 and value[0] == value[-1] and value[0] in "\"'":
+                    value = value[1:-1]
+                os.environ.setdefault(key.strip(), value)
+
+
+load_env()
+
+for _key, _value in list(os.environ.items()):
+    if len(_value) >= 2 and _value[0] == _value[-1] and _value[0] in "\"'":
+        os.environ[_key] = _value[1:-1]
+
+from app import create_app
+
+app = create_app()
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8000)), debug=os.environ.get("FLASK_DEBUG", "1") == "1")
